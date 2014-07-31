@@ -1,0 +1,39 @@
+- hosts: all
+  remote_user: vagrant
+  tasks:
+    - name: Install Bundler
+      gem: name=bundler state=latest
+
+    - name: Make sure UFW is on
+      ufw: state=enabled policy=deny
+      sudo: yes
+
+    - name: Allow SSH through the firewall
+      ufw: rule=allow name=OpenSSH
+      sudo: yes
+
+    - name: Allow Rails (port 3000) through the firewall
+      ufw: rule=allow port=3000 proto=tcp
+      sudo: yes
+
+    - name: Ensure we have psycopg2
+      apt: name=python-psycopg2 state=present
+      sudo: yes
+
+    - name: Allow passwordless sudo to Postgres
+      lineinfile:
+        dest: /etc/sudoers.d/vagrant
+        line: "vagrant ALL=(postgres) NOPASSWD: ALL"
+        insertafter: EOF
+      sudo: yes
+
+    - name: Create vagrant PostgreSQL user
+      postgresql_user: name=vagrant role_attr_flags=CREATEDB,NOSUPERUSER
+      sudo: yes
+      sudo_user: postgres
+
+    - name: Add local gems to PATH
+      lineinfile:
+        dest: /home/vagrant/.bashrc
+        line: export PATH=/home/vagrant/.gem/ruby/2.1.0/bin:$PATH
+        insertafter: EOF

@@ -58,13 +58,17 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # View the documentation for the provider you're using for more
   # information on available options.
 
-  config.vm.provision "shell" do |sh|
-    sh.inline = "
-    sudo su - vagrant -c 'gem install bundler --user-install'
-    echo 'export PATH=/home/vagrant/.gem/ruby/2.1.0/bin:$PATH' >> /home/vagrant/.bashrc
-    sudo -u postgres dropuser vagrant 2>/dev/null || echo 'user does not exist'
-    sudo -u postgres createuser --createdb vagrant
-    "
+  # config.vm.provision "shell" do |sh|
+  #   sh.inline = "
+  #   sudo su - vagrant -c 'gem install bundler --user-install'
+  #   echo 'export PATH=/home/vagrant/.gem/ruby/2.1.0/bin:$PATH' >> /home/vagrant/.bashrc
+  #   sudo -u postgres createuser --createdb vagrant 2> /dev/null || echo 'user already exists'
+  #   ufw disable
+  #   "
+  # end
+
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "playbook.yml"
   end
 
   # Enable provisioning with CFEngine. CFEngine Community packages are
